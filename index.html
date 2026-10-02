@@ -186,6 +186,70 @@
     .reset { grid-column: 1 / -1; }
   }
 
+  /* ---------- Smartphone hoch ---------- */
+  @media (max-width: 600px) {
+    body { padding-bottom: 0; }
+    header { padding: 12px 14px 12px; gap: 10px; }
+    .brand { display: flex; align-items: baseline; gap: 10px; }
+    .brand small { font-size: 0.85rem; }
+    .brand h1 { font-size: 1.35rem; order: -1; }
+    .card-btn { min-width: 0; height: 54px; padding: 0 8px; font-size: 1.35rem; }
+
+    main { justify-content: flex-start; padding: 14px; gap: 14px; }
+    .hint { font-size: 1.2rem; margin-top: 24px; }
+    .row-label strong { font-size: 1.4rem; }
+    .row-label span { font-size: 0.95rem; }
+    /* zwei Tastenreihen à 6 statt einer mit 11 */
+    .keys { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .keys span { display: none; }
+    .key { height: 52px; border-radius: 12px; font-size: 1.35rem; }
+
+    footer {
+      position: sticky;
+      bottom: 0;
+      grid-template-columns: 1fr auto;
+      gap: 6px 16px;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    }
+    .payout span { font-size: 0.95rem; }
+    .payout output { font-size: 2.9rem; }
+    .facts { grid-column: 1 / -1; grid-row: 2; display: flex; gap: 20px; font-size: 0.95rem; line-height: 1.3; }
+    .facts div { gap: 8px; }
+    .reset { grid-column: 2; grid-row: 1; height: 50px; padding: 0 16px; font-size: 1.05rem; }
+  }
+
+  /* ---------- Smartphone quer ---------- */
+  @media (orientation: landscape) and (max-height: 500px) {
+    body { padding-bottom: 0; }
+    header { flex-wrap: nowrap; padding: 8px 16px; gap: 16px; }
+    .brand { width: auto; }
+    .brand small { font-size: 0.8rem; }
+    .brand h1 { font-size: 1.3rem; }
+    .cards { width: auto; }
+    .card-btn { flex: none; min-width: 84px; height: 46px; font-size: 1.25rem; }
+
+    main { justify-content: flex-start; padding: 10px 16px; gap: 8px; }
+    .hint { font-size: 1.15rem; }
+    .row { grid-template-columns: 130px 1fr; gap: 10px; }
+    .row-label { display: block; }
+    .row-label strong { display: block; font-size: 1.3rem; }
+    .row-label span { font-size: 0.85rem; }
+    .keys { gap: 5px; }
+    .key { height: 42px; border-radius: 10px; font-size: 1.15rem; }
+
+    footer {
+      position: sticky;
+      bottom: 0;
+      grid-template-columns: 1fr auto auto;
+      gap: 20px;
+      padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+    }
+    .payout span { font-size: 0.85rem; }
+    .payout output { font-size: 2.3rem; }
+    .facts { font-size: 0.95rem; line-height: 1.4; }
+    .reset { grid-column: auto; height: 46px; font-size: 1.05rem; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .key { transition: none; }
   }
