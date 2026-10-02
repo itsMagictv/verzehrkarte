@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Verzehrkarte">
+<meta name="theme-color" content="#ffffff">
+<title>Verzehrkarte</title>
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #0e2a36;        /* Konturfarbe der gedruckten Karte */
+    --ink-soft: #5b6f78;
+    --leaf: #4f8f2f;       /* Logo-Grün */
+    --leaf-dark: #3b6d22;
+    --harvest: #f0a12b;    /* Logo-Orange */
+    --wheat: #fdedc6;
+    --line: #d5dde1;
+    --radius: 14px;
+    --gap: 8px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Avenir Next", "Avenir", "Segoe UI", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  body {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  button:focus-visible { outline: 3px solid var(--harvest); outline-offset: 2px; }
+
+  /* ---------- Kopf: Kartenwahl ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 18px 20px 14px;
+    border-bottom: 2px solid var(--line);
+  }
+  .brand { line-height: 1.1; margin-right: auto; }
+  .brand small {
+    display: block;
+    color: var(--leaf);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+  .brand h1 { margin: 0; font-size: 1.9rem; font-weight: 600; }
+
+  .cards { display: flex; gap: 10px; }
+  .card-btn {
+    min-width: 108px;
+    height: 68px;
+    padding: 0 18px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    background: var(--paper);
+    font-size: 1.7rem;
+    font-weight: 700;
+  }
+  .card-btn[aria-pressed="true"] {
+    background: var(--leaf);
+    border-color: var(--leaf-dark);
+    color: #fff;
+  }
+
+  /* ---------- Felder ---------- */
+  main {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--ink-soft);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    align-items: center;
+    gap: 14px;
+  }
+  .row-label { line-height: 1.15; }
+  .row-label strong { display: block; font-size: 1.9rem; font-weight: 700; }
+  .row-label span { font-size: 1.05rem; color: var(--ink-soft); white-space: nowrap; }
+
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: var(--gap);
+  }
+  .key {
+    height: 66px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    background: var(--paper);
+    font-size: 1.6rem;
+    font-weight: 700;
+    transition: background-color 80ms, color 80ms;
+  }
+  /* Felder bis zur gewählten Anzahl leicht eingefärbt – wie übrig gebliebene Kästchen */
+  .key.filled { background: var(--wheat); }
+  .key.selected {
+    background: var(--harvest);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .key.zero.selected { background: var(--ink); color: #fff; }
+
+  /* ---------- Ergebnis ---------- */
+  footer {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 28px;
+    padding: 16px 20px 20px;
+    background: var(--leaf);
+    color: #fff;
+  }
+  .payout span { display: block; font-size: 1.15rem; font-weight: 600; opacity: 0.9; }
+  .payout output {
+    display: block;
+    font-size: 4.4rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .facts { margin: 0; font-size: 1.15rem; line-height: 1.6; }
+  .facts div { display: flex; justify-content: space-between; gap: 18px; }
+  .facts dt { opacity: 0.9; }
+  .facts dd { margin: 0; font-weight: 700; }
+
+  .reset {
+    height: 68px;
+    padding: 0 24px;
+    border: 2px solid #fff;
+    border-radius: var(--radius);
+    background: transparent;
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .reset:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* ---------- Hochformat / schmale Bildschirme ---------- */
+  @media (max-width: 900px) {
+    header { flex-wrap: wrap; gap: 12px; }
+    .brand { width: 100%; }
+    .cards { width: 100%; }
+    .card-btn { flex: 1; }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+    .row-label { display: flex; align-items: baseline; gap: 12px; }
+    .row-label strong { display: inline; }
+    .key { font-size: 1.4rem; }
+    footer { grid-template-columns: 1fr auto; }
+    .reset { grid-column: 1 / -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .key { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <small>Hof Dinkelberg</small>
+      <h1>Verzehrkarte</h1>
+    </div>
+    <div class="cards" role="group" aria-label="Kartenwert wählen" id="cards"></div>
+  </header>
+
+  <main id="rows">
+    <p class="hint">Welche Karte wird abgerechnet? Oben den Kartenwert wählen.</p>
+  </main>
+
+  <footer>
+    <div class="payout">
+      <span>Auszahlen</span>
+      <output id="payout" aria-live="polite">–</output>
+    </div>
+    <dl class="facts">
+      <div><dt>Verbraucht</dt><dd id="used">–</dd></div>
+      <div><dt>Kartenwert</dt><dd id="total">–</dd></div>
+    </dl>
+    <button class="reset" id="reset" type="button">Zurücksetzen</button>
+  </footer>
+
+<script>
+  // Felder pro Karte, Werte in Cent. Bei neuen Kartenlayouts nur hier anpassen.
+  const KARTEN = {
+    10: [[100, 6], [50, 8]],
+    25: [[200, 5], [100, 10], [50, 10]],
+    50: [[500, 4], [200, 8], [100, 10], [50, 8]],
+  };
+  const SPALTEN = 11; // 0 bis 10 – größte Feldanzahl auf einer Karte
+
+  const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  const fmt = cents => euro.format(cents / 100);
+
+  const els = {
+    cards: document.getElementById('cards'),
+    rows: document.getElementById('rows'),
+    payout: document.getElementById('payout'),
+    used: document.getElementById('used'),
+    total: document.getElementById('total'),
+    reset: document.getElementById('reset'),
+  };
+
+  let karte = null;   // gewählter Kartenwert in €
+  let rest = {};      // Cent-Wert -> Anzahl übriger Felder
+
+  function renderCards() {
+    els.cards.innerHTML = '';
+    for (const wert of Object.keys(KARTEN).map(Number).sort((a, b) => a - b)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'card-btn';
+      b.textContent = wert + ' €';
+      b.setAttribute('aria-pressed', String(wert === karte));
+      b.addEventListener('click', () => selectCard(wert));
+      els.cards.appendChild(b);
+    }
+  }
+
+  function selectCard(wert) {
+    karte = wert;
+    rest = Object.fromEntries(KARTEN[wert].map(([cent]) => [cent, 0]));
+    renderCards();
+    renderRows();
+    update();
+  }
+
+  function renderRows() {
+    els.rows.innerHTML = '';
+    for (const [cent, max] of KARTEN[karte]) {
+      const row = document.createElement('section');
+      row.className = 'row';
+
+      const label = document.createElement('div');
+      label.className = 'row-label';
+      label.innerHTML = `<strong>${fmt(cent).replace(/,00\s/, ' ')}</strong><span id="sub-${cent}"></span>`;
+      row.appendChild(label);
+
+      const keys = document.createElement('div');
+      keys.className = 'keys';
+      keys.setAttribute('role', 'group');
+      keys.setAttribute('aria-label', `Übrige ${fmt(cent)}-Felder`);
+      for (let n = 0; n < SPALTEN; n++) {
+        if (n > max) {
+          keys.appendChild(document.createElement('span'));
+          continue;
+        }
+        const k = document.createElement('button');
+        k.type = 'button';
+        k.className = 'key' + (n === 0 ? ' zero' : '');
+        k.textContent = n;
+        k.dataset.n = n;
+        k.addEventListener('click', () => { rest[cent] = n; update(); });
+        keys.appendChild(k);
+      }
+      row.appendChild(keys);
+      els.rows.appendChild(row);
+    }
+  }
+
+  function update() {
+    if (karte === null) return;
+    let restCent = 0;
+    for (const [cent, max] of KARTEN[karte]) {
+      const n = rest[cent];
+      restCent += n * cent;
+      document.getElementById('sub-' + cent).textContent = `${n} von ${max} = ${fmt(n * cent)}`;
+      const keys = els.rows.querySelector(`[aria-label="Übrige ${fmt(cent)}-Felder"]`);
+      for (const k of keys.querySelectorAll('.key')) {
+        const v = Number(k.dataset.n);
+        k.classList.toggle('selected', v === n);
+        k.classList.toggle('filled', v > 0 && v < n);
+        k.setAttribute('aria-pressed', String(v === n));
+      }
+    }
+    const totalCent = karte * 100;
+    els.payout.textContent = fmt(restCent);
+    els.used.textContent = fmt(totalCent - restCent);
+    els.total.textContent = fmt(totalCent);
+  }
+
+  els.reset.addEventListener('click', () => { if (karte !== null) selectCard(karte); });
+
+  renderCards();
+</script>
+</body>
+</html>
